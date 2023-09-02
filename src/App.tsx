@@ -1,34 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { createContext, useEffect, useState } from 'react'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { Socket } from 'socket.io-client'
+import { Landing } from './pages/landing'
+import { Room } from './pages/Room'
+
+export const SocketContext = createContext<{
+  socket: Socket | null
+  setSocket: React.Dispatch<React.SetStateAction<Socket | null>>
+} | null>(null)
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [socket, setSocket] = useState<Socket | null>(null)
+
+  useEffect(() => {
+    console.log(socket)
+  }, [socket])
+
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <Landing />,
+    },
+    {
+      path: '/:roomId',
+      element: <Room />,
+    },
+  ])
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <SocketContext.Provider value={{ socket, setSocket }}>
+      <RouterProvider router={router} />
+    </SocketContext.Provider>
   )
 }
 
