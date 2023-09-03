@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
 const app = express()
 const server = require('http').createServer(app)
 const port = process.env.PORT || 5000
-
+console.log(port)
 app.use(cors())
 app.use(express.json())
 
@@ -51,8 +51,9 @@ io.on('connection', (socket: CustomSocket) => {
     socket.username = data.username as string
     const room = await Room.updateOne(
       { roomId: data.roomId },
-      { users: { $push: socket.username } }
+      { $push: { users: socket.username } }
     )
+    socket.join(data.roomId)
     io.to(data.roomId).emit('roomUpdate')
   })
   socket.on('disconnect', async () => {
