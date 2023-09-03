@@ -2,11 +2,13 @@ import { useContext, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import { SocketContext } from '../App'
+import { toast } from 'react-toastify'
 export const Landing = () => {
   const socketContext = useContext(SocketContext)
   const [isCreating, setCreating] = useState(false)
   const navigate = useNavigate()
   const usernameRef = useRef<HTMLInputElement>(null)
+  const RoomIdRef = useRef<HTMLInputElement>(null)
   const createRoom = () => {
     const socket = io('http://localhost:5000/')
 
@@ -18,6 +20,25 @@ export const Landing = () => {
           username: usernameRef.current.value,
         })
         navigate(`/${'Room_' + socket.id}`)
+      }
+    })
+  }
+  const joinRoom = () => {
+    const socket = io('http://localhost:5000/')
+    socket.on('connect', () => {
+      socketContext?.setSocket(socket)
+      if (usernameRef.current && RoomIdRef.current) {
+        if (usernameRef.current.value.trim().length <= 0) {
+          toast.error('username cant be empty')
+        }
+        if (RoomIdRef.current.value.trim().length <= 0) {
+          return toast.error('Room id cant be empty')
+        }
+        socket.emit('join', {
+          roomId: RoomIdRef.current.value,
+          username: usernameRef.current.value,
+        })
+        navigate(`/${RoomIdRef.current.value}`)
       }
     })
   }
@@ -60,16 +81,27 @@ export const Landing = () => {
           )}
         </div>
         {isCreating || (
-          <div className="border-2 rounded-md w-5/12 h-64 flex items-center justify-center flex-col gap-4">
-            <h1 className="text-2xl">Join a room</h1>
-            <div className="input-group w-full px-6">
-              <input
-                type="text"
-                placeholder="Room Id"
-                className="input input-bordered input-primary w-full"
-              />
-              <button className="btn btn-primary">Go</button>
-            </div>
+          <div className="border-2 rounded-md w-5/12 h-64 flex items-center justify-center flex-col gap-3">
+            <>
+              <h1 className="text-2xl">Join a room</h1>
+              <div className="input-group w-full px-6">
+                <input
+                  type="text"
+                  placeholder="username"
+                  className="input input-bordered input-primary w-full"
+                  ref={usernameRef}
+                />
+                <input
+                  type="text"
+                  placeholder="Room Id"
+                  className="input input-bordered input-primary w-full"
+                  ref={RoomIdRef}
+                />
+                <button className="btn btn-primary" onClick={joinRoom}>
+                  Go
+                </button>
+              </div>
+            </>
           </div>
         )}
       </div>
