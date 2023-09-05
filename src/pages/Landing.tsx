@@ -15,11 +15,15 @@ export const Landing = () => {
     socket.on('connect', () => {
       socketContext?.setSocket(socket)
       if (usernameRef.current) {
-        socket.emit('create', {
-          roomId: 'Room_' + socket.id,
-          username: usernameRef.current.value,
-        })
-        navigate(`/${'Room_' + socket.id}`)
+        if (usernameRef.current.value.trim().length < 10) {
+          socket.emit('create', {
+            roomId: 'Room_' + socket.id,
+            username: usernameRef.current.value,
+          })
+          navigate(`/${'Room_' + socket.id}`)
+        } else {
+          toast.error('username should not exceed 10 characters')
+        }
       }
     })
   }
@@ -34,11 +38,15 @@ export const Landing = () => {
         if (RoomIdRef.current.value.trim().length <= 0) {
           return toast.error('Room id cant be empty')
         }
-        socket.emit('join', {
-          roomId: RoomIdRef.current.value,
-          username: usernameRef.current.value,
-        })
-        navigate(`/${RoomIdRef.current.value}`)
+        if (usernameRef.current.value.trim().length < 10) {
+          socket.emit('join', {
+            roomId: RoomIdRef.current.value,
+            username: usernameRef.current.value,
+          })
+          navigate(`/${RoomIdRef.current.value}`)
+        } else {
+          toast.error('username should not exceed 10 characters')
+        }
       }
     })
   }
