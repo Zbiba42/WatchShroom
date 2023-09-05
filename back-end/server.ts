@@ -42,7 +42,7 @@ io.on('connection', (socket: CustomSocket) => {
     const room = await Room.create({
       roomId: data.roomId,
       host: socket.id,
-      users: [socket.username],
+      users: [{ id: socket.id, username: socket.username }],
       playlist: [],
     })
     socket.join(room.roomId)
@@ -51,24 +51,40 @@ io.on('connection', (socket: CustomSocket) => {
     socket.username = data.username as string
     const room = await Room.updateOne(
       { roomId: data.roomId },
-      { $push: { users: socket.username } }
+      { $push: { users: { id: socket.id, username: socket.username } } }
     )
     socket.join(data.roomId)
     io.to(data.roomId).emit('roomUpdate')
   })
   socket.on('disconnect', async () => {
     console.log('disconected')
-    const room = await Room.findOne({ host: socket.id })
-    if (room) {
-      io.to(room.roomId).emit('roomEnded')
+    const isHost = await Room.findOne({ host: socket.id })
+    const isUser = await Room.findOne({ 'users.id': socket.id })
+    if (isHost) {
+      io.to(isHost.roomId).emit('roomEnded')
       await Room.deleteOne({ host: socket.id })
+    } else if (isUser) {
+      await isUser.updateOne({ $pull: { users: { id: socket.id } } })
+      io.to(isUser.roomId).emit('roomUpdate')
     }
   })
-  // socket.on('addUrl', (url: string) => {
-  //   console.log(url)
-  //   room.vids.push(url)
-  //   io.to(room.id).emit('roomUpdate', room)
-  // })
+  socket.on('addUrl', async (data) => {
+    await Room.updateOne(
+      { roomId: data.roomId },
+      { $push: { playlist: data.url } }
+    )
+    io.to(data.roomId).emit('roomUpdate')
+  })
+  socket.on('setCurrent', async (data) => {
+    await Room.updateOne({ roomId: data.roomId }, { current: data.url })
+    io.to(data.roomId).emit('roomUpdate')
+  })
+  socket.on('playCurrent', (roomId) => {
+    io.to(roomId).emit('playCurrent')
+  })
+  socket.on('pauseCurrent', (roomId) => {
+    io.to(roomId).emit('pauseCurrent')
+  })
 })
 server.listen(port, () => {
   console.log('server started')
