@@ -14,6 +14,10 @@ const RoomSchema = new mongoose.Schema({
       type: Object,
     },
   ],
+  current: {
+    type: String,
+    default: '',
+  },
   playlist: [
     {
       type: String,
