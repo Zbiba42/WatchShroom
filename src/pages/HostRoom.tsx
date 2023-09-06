@@ -3,6 +3,7 @@ import ReactPlayer from 'react-player'
 import { toast } from 'react-toastify'
 
 import { Socket } from 'socket.io-client'
+import { Chat } from '../components/Chat'
 
 interface Props {
   socket: Socket
@@ -54,6 +55,9 @@ export const HostRoom = ({
             socket.emit('playCurrent', roomId)
             setIsPlaying(true)
           }}
+          onSeek={(s) => {
+            console.log(s)
+          }}
           onPlay={() => {
             socket.emit('playCurrent', roomId)
           }}
@@ -64,15 +68,6 @@ export const HostRoom = ({
       </div>
       <div className="w-3/12 ">
         <div className="input-group w-full p-1">
-          {/* <select className="select select-bordered">
-            <option disabled selected>
-              Platform
-            </option>
-            <option>Youtube</option>
-            <option>Other</option>
-            <option>Local File</option>
-          </select> */}
-
           <input
             type="text"
             placeholder="video url"
@@ -83,6 +78,13 @@ export const HostRoom = ({
             Add
           </button>
         </div>
+        {/* <div className="px-1">
+          <input
+            type="file"
+            className="file-input file-input-bordered file-input-primary w-full max-w-xs"
+            accept="video/mp4,video/mkv, video/x-m4v,video/*"
+          />
+        </div> */}
         <h1 className="ml-2">Playlist :</h1>
         <div className="w-full h-2/5 overflow-scroll p-1">
           {urls.map((url) => {
@@ -134,6 +136,7 @@ export const HostRoom = ({
             }
           })}
         </div>
+        <Chat socket={socket} roomId={roomId} />
       </div>
     </>
   )
