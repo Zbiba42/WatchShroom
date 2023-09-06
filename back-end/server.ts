@@ -85,6 +85,10 @@ io.on('connection', (socket: CustomSocket) => {
   socket.on('pauseCurrent', (roomId) => {
     io.to(roomId).emit('pauseCurrent')
   })
+
+  socket.on('sendMessage', (data) => {
+    io.to(data.roomId).emit('recieveMsg', data.message)
+  })
 })
 server.listen(port, () => {
   console.log('server started')
