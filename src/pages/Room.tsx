@@ -114,6 +114,7 @@ export const Room = () => {
             socket={socketContext.socket}
             urls={urls}
             current={current}
+            roomId={roomId}
           />
         )}
       </div>
